@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 @Component
 public class EntityMapper {
 
-    // ----------- CAR → CarDTO -----------
+    //  CAR → CarDTO
     public CarDTO toCarDTO(Car car) {
         CarDTO dto = new CarDTO();
 
@@ -34,7 +34,7 @@ public class EntityMapper {
     }
 
 
-    // ----------- ExtraService → ExtraServiceDTO -----------
+    //  ExtraService → ExtraServiceDTO
     public ExtraServiceDTO toExtraServiceDTO(ExtraService e) {
         ExtraServiceDTO dto = new ExtraServiceDTO();
 
@@ -46,7 +46,7 @@ public class EntityMapper {
     }
 
 
-    // ----------- Member → MemberDTO -----------
+    // Member → MemberDTO
     public MemberDTO toMemberDTO(Member m) {
         MemberDTO dto = new MemberDTO();
 
@@ -60,7 +60,7 @@ public class EntityMapper {
     }
 
 
-    // ----------- Location → LocationDTO -----------
+    //  Location → LocationDTO
     public LocationDTO toLocationDTO(Location l) {
         LocationDTO dto = new LocationDTO();
 
@@ -71,7 +71,7 @@ public class EntityMapper {
     }
 
 
-    // ----------- Reservation → ReservationDTO -----------
+    //  Reservation → ReservationDTO
     public ReservationDTO toReservationDTO(Reservation r) {
         ReservationDTO dto = new ReservationDTO();
 

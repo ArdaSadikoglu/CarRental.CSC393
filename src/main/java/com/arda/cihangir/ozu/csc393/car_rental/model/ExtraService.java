@@ -19,7 +19,7 @@ import java.util.List;
 public class ExtraService {
 
     @Id
-    private String code;   // Örn: GPS, BABYSEAT vb.
+    private String code;
 
     private String name;
     private double price;
