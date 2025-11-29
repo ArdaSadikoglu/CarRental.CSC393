@@ -20,4 +20,7 @@ public class ReservationService {
     public Reservation create(Reservation r) {
         return reservationRepository.save(r);
     }
+    public Reservation getById(String reservationNumber) {
+        return reservationRepository.findById(reservationNumber).orElse(null);
+    }
 }

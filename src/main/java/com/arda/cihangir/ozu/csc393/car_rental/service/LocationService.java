@@ -16,4 +16,11 @@ public class LocationService {
     public List<Location> getAll() {
         return locationRepository.findAll();
     }
+    public Location create(Location loc) {
+        return locationRepository.save(loc);
+    }
+
+    public Location getById(String code) {
+        return locationRepository.findById(code).orElse(null);
+    }
 }

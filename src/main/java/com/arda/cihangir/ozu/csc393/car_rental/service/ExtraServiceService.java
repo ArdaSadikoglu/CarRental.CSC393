@@ -13,6 +13,15 @@ public class ExtraServiceService {
 
     private final ExtraServiceRepository extraServiceRepository;
 
+    // Zaten varsa dokunma, yoksa ekle:
+    public ExtraService create(ExtraService extra) {   // ✅
+        return extraServiceRepository.save(extra);
+    }
+
+    public ExtraService getById(String code) {         // ✅
+        return extraServiceRepository.findById(code).orElse(null);
+    }
+
     public List<ExtraService> getAll() {
         return extraServiceRepository.findAll();
     }
