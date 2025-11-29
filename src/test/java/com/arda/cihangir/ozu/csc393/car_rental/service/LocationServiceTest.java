@@ -26,7 +26,7 @@ public class LocationServiceTest {
 
         Location loc = new Location("IST", "Istanbul", null, null);
 
-        locationService.create(loc);  // ✔ SENİN METODUN
+        locationService.create(loc);
 
         Location found = locationService.getById("IST");
 
