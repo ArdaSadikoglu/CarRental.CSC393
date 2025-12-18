@@ -18,23 +18,22 @@ public class CarService {
     private final EntityMapper mapper;
 
     public List<CarDTO> searchAvailableCars(SearchAvailableCarsRequest req) {
+
         if (req.getPickUpDate() == null || req.getDropOffDate() == null) {
             throw new IllegalArgumentException("pickUpDate & dropOffDate required");
         }
+
         if (req.getPickupLocationCode() == null || req.getPickupLocationCode().isBlank()) {
             throw new IllegalArgumentException("pickupLocationCode required");
         }
 
-        CarCategory category = (req.getCategory() == null || req.getCategory().isBlank())
-                ? null : CarCategory.valueOf(req.getCategory());
-
-        TransmissionType tt = (req.getTransmissionType() == null || req.getTransmissionType().isBlank())
-                ? null : TransmissionType.valueOf(req.getTransmissionType());
+        CarCategory category = parseEnum(req.getCategory(), CarCategory.class);
+        TransmissionType transmissionType = parseEnum(req.getTransmissionType(), TransmissionType.class);
 
         return carRepository.searchAvailable(
                 CarStatus.AVAILABLE,
                 category,
-                tt,
+                transmissionType,
                 req.getMinDailyPrice(),
                 req.getMaxDailyPrice(),
                 req.getPickUpDate(),
@@ -42,5 +41,18 @@ public class CarService {
                 req.getNumberOfSeats(),
                 req.getPickupLocationCode()
         ).stream().map(mapper::toCarDTO).toList();
+    }
+
+    private <T extends Enum<T>> T parseEnum(String value, Class<T> enumClass) {
+        if (value == null || value.isBlank() || value.equalsIgnoreCase("string")) {
+            return null;
+        }
+        try {
+            return Enum.valueOf(enumClass, value.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid value for " + enumClass.getSimpleName() + ": " + value
+            );
+        }
     }
 }
