@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ExtraServiceDTO {
-    private Long code;
+    private String code;
     private String name;
     private double price;
 }

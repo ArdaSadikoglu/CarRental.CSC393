@@ -9,8 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Configuration
@@ -30,137 +29,64 @@ public class SeedConfig {
 
     @Transactional
     public void seedIfEmpty() {
-
-        // 1) Locations
         if (locationRepository.count() == 0) {
-            Location l1 = new Location();
-            Location l2 = new Location();
-
-            trySet(l1, "setName", "OZU Campus");
-            trySet(l1, "setCity", "Istanbul");
-
-            trySet(l2, "setName", "Sabiha Gokcen");
-            trySet(l2, "setCity", "Istanbul");
-
-            locationRepository.saveAll(List.of(l1, l2));
+            locationRepository.saveAll(List.of(
+                    new Location("1", "İstanbul Airport", null, null),
+                    new Location("2", "İstanbul Sabiha Gökçen Airport", null, null),
+                    new Location("3", "İstanbul Kadıköy", null, null),
+                    new Location("4", "İzmir City Center", null, null)
+            ));
         }
 
-        // 2) Members
-        if (memberRepository.count() == 0) {
-            Member m1 = new Member();
-            Member m2 = new Member();
-
-            trySet(m1, "setName", "Arda");
-            trySet(m1, "setSurname", "Sadikoglu");
-            trySet(m1, "setEmail", "arda@mail.com");
-
-            trySet(m2, "setName", "Test");
-            trySet(m2, "setSurname", "User");
-            trySet(m2, "setEmail", "test@mail.com");
-
-            memberRepository.saveAll(List.of(m1, m2));
-        }
-
-        // 3) Extra Services
         if (extraServiceRepository.count() == 0) {
-            ExtraService e1 = new ExtraService();
-            ExtraService e2 = new ExtraService();
-
-            trySet(e1, "setName", "GPS");
-            trySet(e1, "setPrice", 150.0);
-
-            trySet(e2, "setName", "Child Seat");
-            trySet(e2, "setPrice", 200.0);
-
-            extraServiceRepository.saveAll(List.of(e1, e2));
+            extraServiceRepository.saveAll(List.of(
+                    new ExtraService("GPS", "GPS", 150.0, null),
+                    new ExtraService("CHILD_SEAT", "Child Seat", 200.0, null),
+                    new ExtraService("WIFI", "Wifi Router", 250.0, null)
+            ));
         }
 
-        // 4) Cars
+        if (memberRepository.count() == 0) {
+            memberRepository.saveAll(List.of(
+                    new Member(null, "Arda", "Adres 1", "arda@mail.com", "5551112233", "DL-123", null),
+                    new Member(null, "Test User", "Adres 2", "test@mail.com", "5559998877", "DL-999", null)
+            ));
+        }
+
         if (carRepository.count() == 0) {
-            Car c1 = new Car();
-            Car c2 = new Car();
+            Location l1 = locationRepository.findById("1").orElseThrow();
+            Location l3 = locationRepository.findById("3").orElseThrow();
 
-            // Bu setter isimleri sende farklıysa sorun değil; trySet sessizce geçiyor.
-            trySet(c1, "setPlate", "34ABC34");
-            trySet(c1, "setBrand", "BMW");
-            trySet(c1, "setModel", "320i");
-            trySetEnum(c1, "setCategory", CarCategory.class, "SEDAN");
-            trySetEnum(c1, "setTransmissionType", TransmissionType.class, "AUTOMATIC");
-            trySetEnum(c1, "setStatus", CarStatus.class, "AVAILABLE");
-
-            trySet(c2, "setPlate", "06XYZ06");
-            trySet(c2, "setBrand", "Toyota");
-            trySet(c2, "setModel", "Corolla");
-            trySetEnum(c2, "setCategory", CarCategory.class, "HATCHBACK");
-            trySetEnum(c2, "setTransmissionType", TransmissionType.class, "MANUAL");
-            trySetEnum(c2, "setStatus", CarStatus.class, "AVAILABLE");
-
-            carRepository.saveAll(List.of(c1, c2));
+            carRepository.saveAll(List.of(
+                    new Car("C-0001","34ABC34","BMW","320i",5,2500,12000,
+                            CarStatus.AVAILABLE, TransmissionType.AUTOMATIC, CarCategory.LUXURY,
+                            l1, null),
+                    new Car("C-0002","06XYZ06","Toyota","Corolla",5,1200,45000,
+                            CarStatus.AVAILABLE, TransmissionType.MANUAL, CarCategory.COMPACT,
+                            l3, null)
+            ));
         }
 
-        // 5) Reservations (opsiyonel ama iyi görünür)
+        // Opsiyonel örnek ACTIVE rezervasyon (rented-cars listesi için)
         if (reservationRepository.count() == 0) {
-            List<Car> cars = carRepository.findAll();
-            List<Member> members = memberRepository.findAll();
-            List<Location> locations = locationRepository.findAll();
+            Car car = carRepository.findById("C-0002").orElseThrow();
+            Member member = memberRepository.findAll().get(0);
+            Location pu = locationRepository.findById("3").orElseThrow();
+            Location doo = locationRepository.findById("1").orElseThrow();
 
-            if (!cars.isEmpty() && !members.isEmpty() && !locations.isEmpty()) {
-                Reservation r1 = new Reservation();
+            Reservation r = new Reservation();
+            r.setReservationNumber("12345678");
+            r.setCreationDate(LocalDateTime.now());
+            r.setPickUpDate(LocalDateTime.now().minusDays(1));
+            r.setDropOffDate(LocalDateTime.now().plusDays(2));
+            r.setStatus(ReservationStatus.ACTIVE);
+            r.setPickUpLocation(pu);
+            r.setDropOffLocation(doo);
+            r.setMember(member);
+            r.setCar(car);
+            r.setExtras(List.of(extraServiceRepository.findById("GPS").orElseThrow()));
 
-                // reservationNumber / id
-                trySet(r1, "setReservationNumber", "R-0001");
-                trySet(r1, "setId", "R-0001"); // sende id ismi böyleyse
-
-                // ilişkiler (sende alan adları farklı olabilir)
-                trySet(r1, "setCar", cars.get(0));
-                trySet(r1, "setMember", members.get(0));
-                trySet(r1, "setPickupLocation", locations.get(0));
-                trySet(r1, "setDropoffLocation", locations.get(1));
-
-                // tarih alanları (LocalDate ise)
-                trySet(r1, "setStartDate", LocalDate.now().plusDays(1));
-                trySet(r1, "setEndDate", LocalDate.now().plusDays(3));
-
-                // status
-                trySetEnum(r1, "setStatus", ReservationStatus.class, "ACTIVE");
-
-                reservationRepository.save(r1);
-            }
+            reservationRepository.save(r);
         }
-    }
-
-    private void trySet(Object target, String methodName, Object arg) {
-        try {
-            for (Method m : target.getClass().getMethods()) {
-                if (m.getName().equals(methodName) && m.getParameterCount() == 1) {
-                    Class<?> p = m.getParameterTypes()[0];
-                    Object coerced = coerce(arg, p);
-                    if (coerced == null && p.isPrimitive()) return;
-                    m.invoke(target, coerced);
-                    return;
-                }
-            }
-        } catch (Exception ignored) { }
-    }
-
-    private <E extends Enum<E>> void trySetEnum(Object target, String methodName, Class<E> enumType, String value) {
-        try {
-            E enumVal = Enum.valueOf(enumType, value);
-            trySet(target, methodName, enumVal);
-        } catch (Exception ignored) { }
-    }
-
-    private Object coerce(Object value, Class<?> targetType) {
-        if (value == null) return null;
-        if (targetType.isInstance(value)) return value;
-
-        if (targetType == String.class) return String.valueOf(value);
-
-        if ((targetType == double.class || targetType == Double.class) && value instanceof Number n) return n.doubleValue();
-        if ((targetType == int.class || targetType == Integer.class) && value instanceof Number n) return n.intValue();
-        if ((targetType == long.class || targetType == Long.class) && value instanceof Number n) return n.longValue();
-        if ((targetType == boolean.class || targetType == Boolean.class) && value instanceof Boolean b) return b;
-
-        return value; // çoğu entity referansı zaten uyumlu gelir
     }
 }

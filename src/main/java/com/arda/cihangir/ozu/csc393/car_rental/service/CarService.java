@@ -1,28 +1,46 @@
 package com.arda.cihangir.ozu.csc393.car_rental.service;
 
-import jakarta.persistence.Id;
+import com.arda.cihangir.ozu.csc393.car_rental.DTO.CarDTO;
+import com.arda.cihangir.ozu.csc393.car_rental.DTO.SearchAvailableCarsRequest;
+import com.arda.cihangir.ozu.csc393.car_rental.mapper.EntityMapper;
+import com.arda.cihangir.ozu.csc393.car_rental.model.enums.*;
+import com.arda.cihangir.ozu.csc393.car_rental.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
-import com.arda.cihangir.ozu.csc393.car_rental.model.Car;
-import com.arda.cihangir.ozu.csc393.car_rental.repository.CarRepository;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CarService {
 
     private final CarRepository carRepository;
+    private final EntityMapper mapper;
 
-    public List<Car> getAll() {
-        return carRepository.findAll();
-    }
+    public List<CarDTO> searchAvailableCars(SearchAvailableCarsRequest req) {
+        if (req.getPickUpDate() == null || req.getDropOffDate() == null) {
+            throw new IllegalArgumentException("pickUpDate & dropOffDate required");
+        }
+        if (req.getPickupLocationCode() == null || req.getPickupLocationCode().isBlank()) {
+            throw new IllegalArgumentException("pickupLocationCode required");
+        }
 
-    public Car getById(String id) {
-        return carRepository.findById(id).orElse(null);
-    }
+        CarCategory category = (req.getCategory() == null || req.getCategory().isBlank())
+                ? null : CarCategory.valueOf(req.getCategory());
 
-    public Car create(Car car) {
-        return carRepository.save(car);
+        TransmissionType tt = (req.getTransmissionType() == null || req.getTransmissionType().isBlank())
+                ? null : TransmissionType.valueOf(req.getTransmissionType());
+
+        return carRepository.searchAvailable(
+                CarStatus.AVAILABLE,
+                category,
+                tt,
+                req.getMinDailyPrice(),
+                req.getMaxDailyPrice(),
+                req.getPickUpDate(),
+                req.getDropOffDate(),
+                req.getNumberOfSeats(),
+                req.getPickupLocationCode()
+        ).stream().map(mapper::toCarDTO).toList();
     }
 }

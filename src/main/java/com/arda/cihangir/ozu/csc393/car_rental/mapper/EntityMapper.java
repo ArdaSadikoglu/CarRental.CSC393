@@ -38,7 +38,7 @@ public class EntityMapper {
     public ExtraServiceDTO toExtraServiceDTO(ExtraService e) {
         ExtraServiceDTO dto = new ExtraServiceDTO();
 
-        dto.setCode(Long.valueOf(e.getCode()));
+        dto.setCode(e.getCode());
         dto.setName(e.getName());
         dto.setPrice(e.getPrice());
 

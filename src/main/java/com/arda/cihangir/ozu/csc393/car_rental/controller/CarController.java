@@ -1,11 +1,15 @@
 package com.arda.cihangir.ozu.csc393.car_rental.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
-import com.arda.cihangir.ozu.csc393.car_rental.model.Car;
+import com.arda.cihangir.ozu.csc393.car_rental.DTO.CarDTO;
+import com.arda.cihangir.ozu.csc393.car_rental.DTO.SearchAvailableCarsRequest;
+import com.arda.cihangir.ozu.csc393.car_rental.repository.ReservationRepository;
 import com.arda.cihangir.ozu.csc393.car_rental.service.CarService;
+import com.arda.cihangir.ozu.csc393.car_rental.repository.CarRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/cars")
@@ -13,19 +17,27 @@ import com.arda.cihangir.ozu.csc393.car_rental.service.CarService;
 public class CarController {
 
     private final CarService carService;
+    private final CarRepository carRepository;
+    private final ReservationRepository reservationRepository;
 
-    @GetMapping
-    public List<Car> getAllCars() {
-        return carService.getAll();
+    // 1) Search available cars
+    @PostMapping("/search-available")
+    public ResponseEntity<?> search(@RequestBody SearchAvailableCarsRequest req) {
+        List<CarDTO> list = carService.searchAvailableCars(req);
+        if (list.isEmpty()) return ResponseEntity.status(404).build();
+        return ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
-    public Car getById(@PathVariable String id) {
-        return carService.getById(id);
-    }
+    // 7) Delete a car (used in reservation ise 406)
+    @DeleteMapping("/{barcodeNumber}")
+    public ResponseEntity<?> delete(@PathVariable String barcodeNumber) {
+        var car = carRepository.findById(barcodeNumber).orElse(null);
+        if (car == null) return ResponseEntity.status(404).build();
 
-    @PostMapping
-    public Car createCar(@RequestBody Car car) {
-        return carService.create(car);
+        boolean used = (car.getReservations() != null && !car.getReservations().isEmpty());
+        if (used) return ResponseEntity.status(406).body(false);
+
+        carRepository.deleteById(barcodeNumber);
+        return ResponseEntity.ok(true);
     }
 }
